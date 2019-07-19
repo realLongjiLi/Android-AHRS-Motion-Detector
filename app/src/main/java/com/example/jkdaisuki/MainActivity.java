@@ -13,7 +13,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.LinkedList;
@@ -39,15 +38,13 @@ public class MainActivity extends AppCompatActivity {
 
     boolean stop = false;
 
-    Object DATA;
+    double[][] DATA = new double[3][3];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        DATA = Array.newInstance(double.class, 3, 3);
-
+        
         // apply sensor manager
         acSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         grSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -64,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
         Watcher myWatcher = new Watcher();
         stop = false;
-        myWatcher.execute(DATA);
+        myWatcher.execute();
     }
 
     private final SensorEventListener acSensorEventListener =new SensorEventListener() {
@@ -72,9 +69,8 @@ public class MainActivity extends AppCompatActivity {
         public void onSensorChanged(SensorEvent event) {
             ((TextView) findViewById(R.id.txView)).setText(MessageFormat.format(
                     "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
-            Object tmp = Array.get(DATA, 0);
             for (int i = 0; i < 3; i++) {
-                Array.set(tmp, i, event.values[i]);
+                DATA[0][i] = event.values[i];
             }
         }
 
@@ -89,9 +85,8 @@ public class MainActivity extends AppCompatActivity {
         public void onSensorChanged(SensorEvent event) {
             ((TextView) findViewById(R.id.txView2)).setText(MessageFormat.format(
                     "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
-            Object tmp = Array.get(DATA, 1);
             for (int i = 0; i < 3; i++) {
-                Array.set(tmp, i, event.values[i]);
+                DATA[1][i] = event.values[i];
             }
         }
 
@@ -106,9 +101,8 @@ public class MainActivity extends AppCompatActivity {
         public void onSensorChanged(SensorEvent event) {
             ((TextView) findViewById(R.id.txView3)).setText(MessageFormat.format(
                     "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
-            Object tmp = Array.get(DATA, 2);
             for (int i = 0; i < 3; i++) {
-                Array.set(tmp, i, event.values[i]);
+                DATA[2][i] = event.values[i];
             }
         }
 
@@ -158,32 +152,18 @@ public class MainActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.textViewComputed)).setText(in);
     }
 
-    private class Watcher extends AsyncTask<Object, String, Void> {
+    private class Watcher extends AsyncTask<Void, String, Void> {
         @Override
-        protected void onPreExecute() {
-
-        }
-
-        @Override
-        protected Void doInBackground(Object... arrayObjectList) {
+        protected Void doInBackground(Void... voids) {
             while (!stop) {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                // Convert to normal double[][] array.
-                double[][] realArray = new double[3][3];
-                for (int i = 0; i < 3; i++) {
-                    Object row = Array.get(arrayObjectList[0], i);
-                    for (int j = 0; j < 3; j++) {
-                        realArray[i][j] = (double) Array.get(row, j);
-                    }
-                }
 
-                double[] result = AHRS.MadgwickAHRSupdate(realArray[0][0], realArray[0][1],
-                        realArray[0][2], realArray[1][0], realArray[1][1], realArray[1][2],
-                        realArray[2][0], realArray[2][1], realArray[2][2]);
+                double[] result = AHRS.MadgwickAHRSupdate(DATA[0][0], DATA[0][1], DATA[0][2],
+                        DATA[1][0], DATA[1][1], DATA[1][2], DATA[2][0], DATA[2][1], DATA[2][2]);
                 String strOutput = decimalFormat.format(result[0]) + ", "
                         + decimalFormat.format(result[1])
                         + ", " + decimalFormat.format(result[2]) + ", "
@@ -197,11 +177,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(String... values) {
             setResult(values[0]);
-        }
-
-        @Override
-        protected void onCancelled() {
-
         }
     }
 
