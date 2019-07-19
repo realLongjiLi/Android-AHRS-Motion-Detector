@@ -13,8 +13,17 @@ public class AHRS {
     private static double q0 = 1.0, q1 = 0.0, q2 = 0.0, q3=0.0;
 
     // find the inverse square root
-    public static double invSqrt(double x) {
-        return 1 / Math.sqrt(x);
+//    public static double invSqrt(double x) {
+//        return 1 / Math.sqrt(x);
+//    }
+    public static double invSqrt(double dx) {
+        float x = (float) dx; // downcast
+        float xhalf = 0.5f * x;
+        int i = Float.floatToIntBits(x);
+        i = 0x5f3759df - (i >> 1);
+        x = Float.intBitsToFloat(i);
+        x *= (1.5f - xhalf * x * x);
+        return x;
     }
 
     public static void resetq() {
