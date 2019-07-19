@@ -1,7 +1,6 @@
 package com.example.jkdaisuki;
 
 import android.content.Context;
-import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -9,7 +8,6 @@ import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,14 +30,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button normalizeButton = findViewById(R.id.normalize_button);
-        normalizeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
-
+        // apply sensor manager
         acSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         grSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         gySensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -52,12 +43,12 @@ public class MainActivity extends AppCompatActivity {
     // 引入数据
 
     public void onClickBT2(View v) {
-        acSensorManager.registerListener(mSensorEventListener, acSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        acSensorManager.registerListener(acSensorEventListener, acSensor, SensorManager.SENSOR_DELAY_NORMAL);
         grSensorManager.registerListener(grSensorEventListener, grSensor, SensorManager.SENSOR_DELAY_NORMAL);
         gySensorManager.registerListener(gySensorEventListener, gySensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
-    private final SensorEventListener mSensorEventListener=new SensorEventListener() {
+    private final SensorEventListener acSensorEventListener =new SensorEventListener() {
 
         @Override
         public void onSensorChanged(SensorEvent event) {
@@ -101,4 +92,10 @@ public class MainActivity extends AppCompatActivity {
 
         }
     };
+
+    public void onClickStop(View v) {
+        acSensorManager.unregisterListener(acSensorEventListener, acSensor);
+        grSensorManager.unregisterListener(grSensorEventListener, grSensor);
+        gySensorManager.unregisterListener(gySensorEventListener, gySensor);
+    }
 }
