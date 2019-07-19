@@ -17,6 +17,13 @@ public class AHRS {
         return 1 / Math.sqrt(x);
     }
 
+    public static void resetq() {
+        q0 = 1.0;
+        q1 = 0.0;
+        q2 = 0.0;
+        q3 = 0.0;
+    }
+
     // AHRS update
     public static double[] MadgwickAHRSupdate(double gx, double gy, double gz, double ax, double ay,
                                           double az, double mx, double my, double mz) {
