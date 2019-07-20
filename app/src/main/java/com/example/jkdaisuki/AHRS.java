@@ -1,21 +1,17 @@
 package com.example.jkdaisuki;
-import java.lang.Math;
 
 public class AHRS {
     // implementation of Madgwick's IMU and AHRS algorithms
     // see: http://www.x-io.co.uk/node/8#open_source_ahrs_and_imu_algorithms
     // definition
-    private static final double sampleFreq = 512.0;
+    private static final double sampleFreq = 500;
     private static final double betaDef = 0.1;
 
     // variable definitions
     private static double beta = betaDef;
-    private static double q0 = 1.0, q1 = 0.0, q2 = 0.0, q3=0.0;
+    private static double q0 = 1.0, q1 = 0.0, q2 = 0.0, q3 = 0.0;
 
     // find the inverse square root
-//    public static double invSqrt(double x) {
-//        return 1 / Math.sqrt(x);
-//    }
     public static double invSqrt(double dx) {
         float x = (float) dx; // downcast
         float xhalf = 0.5f * x;
@@ -26,6 +22,7 @@ public class AHRS {
         return x;
     }
 
+    // reset qs
     public static void resetq() {
         q0 = 1.0;
         q1 = 0.0;
@@ -43,12 +40,11 @@ public class AHRS {
         double _2q0mx, _2q0my, _2q0mz, _2q1mx, _2bx, _2bz, _4bx, _4bz, _2q0, _2q1, _2q2, _2q3,
                 _2q0q2, _2q2q3, q0q0, q0q1, q0q2, q0q3, q1q1, q1q2, q1q3, q2q2, q2q3, q3q3;
 
-//        // Use IMU algorithm if magnetometer measurement invalid
-//        // (avoids NaN in magnetometer normalisation)
-//        if((mx == 0.0f) && (my == 0.0f) && (mz == 0.0f)) {
-//            MadgwickAHRSupdateIMU(gx, gy, gz, ax, ay, az);
-//            return;
-//        }
+        // Use IMU algorithm if magnetometer measurement invalid
+        // (avoids NaN in magnetometer normalisation)
+        if((mx == 0.0f) && (my == 0.0f) && (mz == 0.0f)) {
+            return MadgwickAHRSupdateIMU(gx, gy, gz, ax, ay, az);
+        }
 
         // Rate of change of quaternion from gyroscope
         qDot1 = 0.5f * (-q1 * gx - q2 * gy - q3 * gz);
@@ -127,6 +123,7 @@ public class AHRS {
                     * (q1q3 - q0q2) - mx) + (-_2bx * q0 + _2bz * q2)
                     * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
                     + _2bx * q1 * (_2bx * (q0q2 + q1q3) + _2bz * (0.5f - q1q1 - q2q2) - mz);
+
             // normalise step magnitude
             recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3);
 
@@ -157,11 +154,16 @@ public class AHRS {
 
         return new double[]{q0, q1, q2, q3};
     }
-/*
-//---------------------------------------------------------------------------------------------------
+
+    // find the position
+    public static double[] calculatePosition() {
+
+        return new double[]{0.0, 0.0};
+    }
+
 // IMU algorithm update
 
-    public static void MadgwickAHRSupdateIMU(double gx, double gy, double gz,
+    public static double[] MadgwickAHRSupdateIMU(double gx, double gy, double gz,
                                              double ax, double ay, double az) {
         double recipNorm;
         double s0, s1, s2, s3;
@@ -233,6 +235,6 @@ public class AHRS {
         q2 *= recipNorm;
         q3 *= recipNorm;
 
-
-    }*/
+        return new double[]{q0, q1, q2, q3};
+    }
 }

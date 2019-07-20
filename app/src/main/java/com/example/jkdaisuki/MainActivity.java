@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private final SensorEventListener acSensorEventListener =new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            ((TextView) findViewById(R.id.txView)).setText(MessageFormat.format(
+            ((TextView) findViewById(R.id.txView)).setText(MessageFormat.format("acc = " +
                     "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
             for (int i = 0; i < 3; i++) {
                 DATA[0][i] = event.values[i];
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private final SensorEventListener grSensorEventListener=new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            ((TextView) findViewById(R.id.txView2)).setText(MessageFormat.format(
+            ((TextView) findViewById(R.id.txView2)).setText(MessageFormat.format("grv = " +
                     "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
             for (int i = 0; i < 3; i++) {
                 DATA[1][i] = event.values[i];
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
     private final SensorEventListener gySensorEventListener=new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            ((TextView) findViewById(R.id.txView3)).setText(MessageFormat.format(
+            ((TextView) findViewById(R.id.txView3)).setText(MessageFormat.format("gyo = " +
                     "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
             for (int i = 0; i < 3; i++) {
                 DATA[2][i] = event.values[i];
@@ -157,9 +157,13 @@ public class MainActivity extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             while (!stop) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(200);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                }
+
+                if (DATA[0][0] == 0.0 && DATA[0][1] == 0.0 && DATA[0][2] == 0.0) {
+                    continue;
                 }
 
                 double[] result = AHRS.MadgwickAHRSupdate(DATA[0][0], DATA[0][1], DATA[0][2],
@@ -179,5 +183,4 @@ public class MainActivity extends AppCompatActivity {
             setResult(values[0]);
         }
     }
-
 }
