@@ -237,7 +237,8 @@ public class MainActivity extends AppCompatActivity {
                 stringBuilder.append(str);
             }
             Calendar calendar = Calendar.getInstance();
-            String time = "" + calendar.get(Calendar.HOUR_OF_DAY) + calendar.get(Calendar.MINUTE)
+            String time = "" + String.format("%02d", calendar.get(Calendar.HOUR_OF_DAY))
+                    + String.format("%02d", calendar.get(Calendar.MINUTE))
                     + String.format("%02d", calendar.get(Calendar.SECOND));
             writeStringToCSV(stringBuilder.toString(), time);
             // reset
