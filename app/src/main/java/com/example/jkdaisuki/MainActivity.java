@@ -12,8 +12,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,12 +30,31 @@ public class MainActivity extends AppCompatActivity {
     // gyr sensor manager
     SensorManager gySensorManager;
 
-    // Accelerometer
+    // accelerometer
     Sensor acSensor;
-    // gravity
+    // gravity sensor
     Sensor grSensor;
-    // gyroscope
+    // gyroscope sensor
     Sensor gySensor;
+
+    // text views
+    TextView textViewGRAVITY;
+    TextView textViewGYROSCOPE;
+    TextView textViewACCELEROMETER;
+    TextView textViewComputed;
+
+    // button views
+    Button buttonStart;
+    Button buttonStop;
+    Button buttonToLog;
+    Button buttonReset;
+//    Button buttonBatchCollection = findViewById(R.id.buttonCollectData);
+
+    // booleans
+    boolean lastStateStart;
+    boolean lastStateStop;
+    boolean lastStateToLog;
+    boolean lastStateReset;
 
     DecimalFormat decimalFormat = new DecimalFormat("#.000000");
 
@@ -58,6 +77,20 @@ public class MainActivity extends AppCompatActivity {
         grSensor = grSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         gySensor = gySensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
+        textViewGRAVITY = findViewById(R.id.textViewGRAVITY);
+        textViewGYROSCOPE = findViewById(R.id.textViewGYROSCOPE);
+        textViewACCELEROMETER = findViewById(R.id.textViewACCELEROMETER);
+        textViewComputed = findViewById(R.id.textViewComputed);
+
+        buttonStart = findViewById(R.id.buttonStartRecording);
+        buttonStop = findViewById(R.id.buttonStopRecording);
+        buttonToLog = findViewById(R.id.buttonToLogcat);
+        buttonReset = findViewById(R.id.buttonReset);
+
+        buttonStart.setEnabled(true);
+        buttonStop.setEnabled(false);
+        buttonToLog.setEnabled(false);
+
         requestStorage();
     }
 
@@ -69,13 +102,16 @@ public class MainActivity extends AppCompatActivity {
         acSensorManager.registerListener(acSensorEventListener, acSensor, SensorManager.SENSOR_DELAY_NORMAL);
         grSensorManager.registerListener(grSensorEventListener, grSensor, SensorManager.SENSOR_DELAY_NORMAL);
         gySensorManager.registerListener(gySensorEventListener, gySensor, SensorManager.SENSOR_DELAY_NORMAL);
+
+        buttonStart.setEnabled(false);
+        buttonStop.setEnabled(true);
     }
 
     private final SensorEventListener acSensorEventListener =new SensorEventListener() {
 
         @Override
         public void onSensorChanged(SensorEvent event) {
-            ((TextView) findViewById(R.id.textViewACCELEROMETER)).setText(MessageFormat.format(
+            textViewACCELEROMETER.setText(MessageFormat.format(
                     "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
             for (int i = 0; i < 3; i++) {
                 DATA[1][i] = event.values[i];
@@ -93,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onSensorChanged(SensorEvent event) {
-            ((TextView) findViewById(R.id.textViewGRAVITY)).setText(MessageFormat.format(
+            textViewGRAVITY.setText(MessageFormat.format(
                     "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
             for (int i = 0; i < 3; i++) {
                 DATA[2][i] = event.values[i];
@@ -111,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onSensorChanged(SensorEvent event) {
-            ((TextView) findViewById(R.id.textViewGYROSCOPE)).setText(MessageFormat.format(
+            textViewGYROSCOPE.setText(MessageFormat.format(
                     "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
             for (int i = 0; i < 3; i++) {
                 DATA[0][i] = event.values[i];
@@ -121,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
             String output = decimalFormat.format(tmp[0]) + ", " + decimalFormat.format(tmp[1])
                     + ", " + decimalFormat.format(tmp[2]) + ", "
                     + decimalFormat.format(tmp[3]);
-            ((TextView) findViewById(R.id.textViewComputed)).setText(output);
+            textViewComputed.setText(output);
             linkedList.add(tmp);
         }
 
@@ -135,12 +171,20 @@ public class MainActivity extends AppCompatActivity {
         acSensorManager.unregisterListener(acSensorEventListener, acSensor);
         grSensorManager.unregisterListener(grSensorEventListener, grSensor);
         gySensorManager.unregisterListener(gySensorEventListener, gySensor);
+
+        buttonStart.setEnabled(true);
+        buttonStop.setEnabled(false);
+        buttonToLog.setEnabled(true);
     }
 
     public void onClickReset(View v) {
         AHRS.resetq();
         linkedList = new LinkedList<>();
-        Toast.makeText(this, "reset", Toast.LENGTH_LONG).show();
+//        Toast.makeText(this, "reset", Toast.LENGTH_SHORT).show();
+
+        buttonStart.setEnabled(true);
+        buttonStop.setEnabled(false);
+        buttonToLog.setEnabled(false);
     }
 
     public void onClickPrintToLog(View v) {
@@ -169,9 +213,21 @@ public class MainActivity extends AppCompatActivity {
     public void onClickBatchCollectData(View v) {
         if (YB) {
             YB = false;
+            lastStateStart = buttonStart.isEnabled();
+            lastStateStop = buttonStop.isEnabled();
+            lastStateToLog = buttonToLog.isEnabled();
+            lastStateReset = buttonReset.isEnabled();
             onClickStartRecording(v);
+            buttonStart.setEnabled(false);
+            buttonStop.setEnabled(false);
+            buttonToLog.setEnabled(false);
+            buttonReset.setEnabled(false);
         } else {
             YB = true;
+            buttonStart.setEnabled(lastStateStart);
+            buttonStop.setEnabled(lastStateStop);
+            buttonToLog.setEnabled(lastStateToLog);
+            buttonReset.setEnabled(lastStateReset);
             // stop
             onClickStop(v);
             // save
@@ -182,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
             }
             Calendar calendar = Calendar.getInstance();
             String time = "" + calendar.get(Calendar.HOUR_OF_DAY) + calendar.get(Calendar.MINUTE)
-                    + calendar.get(Calendar.SECOND);
+                    + String.format("%02d", calendar.get(Calendar.SECOND));
             writeStringToCSV(stringBuilder.toString(), time);
             // reset
             onClickReset(v);
