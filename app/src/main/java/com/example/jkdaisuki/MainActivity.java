@@ -127,8 +127,10 @@ public class MainActivity extends AppCompatActivity {
         public void onSensorChanged(SensorEvent event) {
             ((TextView) findViewById(R.id.textView)).setText(MessageFormat.format("lin = " +
                     "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
+            float[] smoothed = new float[3];
+            SimpleAlg.exponentialSmoothing(event.values, smoothed, 0.8f);
             for (int i = 0; i < 3; i++) {
-                DATA[3][i] = event.values[i];
+                DATA[3][i] = smoothed[i];
             }
         }
 
