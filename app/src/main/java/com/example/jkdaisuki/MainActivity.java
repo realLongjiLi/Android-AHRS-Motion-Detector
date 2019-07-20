@@ -5,9 +5,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -15,8 +15,8 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.lang.reflect.Array;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.util.LinkedList;
 
 public class MainActivity extends AppCompatActivity {
@@ -69,8 +69,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onSensorChanged(SensorEvent event) {
-            ((TextView) findViewById(R.id.txView)).setText("[" + event.values[0] + ", "
-                    + event.values[1] + ", " + event.values[2] + "]");
+            ((TextView) findViewById(R.id.textViewACCELEROMETER)).setText(MessageFormat.format(
+                    "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
             for (int i = 0; i < 3; i++) {
                 DATA[1][i] = event.values[i];
             }
@@ -87,8 +87,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onSensorChanged(SensorEvent event) {
-            ((TextView) findViewById(R.id.txView2)).setText("[" + event.values[0] + ", "
-                    + event.values[1] + ", " + event.values[2] + "]");
+            ((TextView) findViewById(R.id.textViewGRAVITY)).setText(MessageFormat.format(
+                    "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
             for (int i = 0; i < 3; i++) {
                 DATA[2][i] = event.values[i];
             }
@@ -105,8 +105,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onSensorChanged(SensorEvent event) {
-            ((TextView) findViewById(R.id.txView3)).setText("[" + event.values[0] + ", "
-                    + event.values[1] + ", " + event.values[2] + "]");
+            ((TextView) findViewById(R.id.textViewGYROSCOPE)).setText(MessageFormat.format(
+                    "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
             for (int i = 0; i < 3; i++) {
                 DATA[0][i] = event.values[i];
             }
@@ -137,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickReset(View v) {
         AHRS.resetq();
+        linkedList = new LinkedList<>();
         Toast.makeText(this, "reset", Toast.LENGTH_LONG).show();
     }
 
