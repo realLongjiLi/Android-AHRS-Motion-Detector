@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
     LinkedList<double[]> linkedList = new LinkedList<>();
 
+    LinkedList<Double> sensor_data = new LinkedList<>();
+
     boolean stop = false;
 
     double[][] DATA = new double[4][3];
@@ -113,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
                     "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
             for (int i = 0; i < 3; i++) {
                 DATA[2][i] = event.values[i];
+
             }
         }
 
@@ -127,10 +130,11 @@ public class MainActivity extends AppCompatActivity {
         public void onSensorChanged(SensorEvent event) {
             ((TextView) findViewById(R.id.textView)).setText(MessageFormat.format("lin = " +
                     "[{0}, {1}, {2}]", event.values[0], event.values[1], event.values[2]));
-            float[] smoothed = new float[3];
-            SimpleAlg.exponentialSmoothing(event.values, smoothed, 0.8f);
+            //float[] smoothed = new float[3];
+            //SimpleAlg.exponentialSmoothing(event.values, smoothed, 1f);
             for (int i = 0; i < 3; i++) {
-                DATA[3][i] = smoothed[i];
+                DATA[3][i] = event.values[i];
+                sensor_data.add(new Double(event.values[i]));
             }
         }
 
@@ -142,9 +146,37 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickStop(View v) {
         stop = true;
+        double[] feature = new double[30];
+
+        if (sensor_data.size() > 30) {
+            int count = 0;
+            for (int i = sensor_data.size() - 1; i > sensor_data.size() - 30; i--) {
+                feature[count] = sensor_data.get(i);
+                count++;
+            }
+        } else {
+            int count = 0;
+            int size = sensor_data.size();
+            for (int i = sensor_data.size() - 1; i > sensor_data.size() - size; i--) {
+                feature[count] = sensor_data.get(i);
+                count++;
+            }
+        }
+
+        int prediction = RandomForestClassifier.predict(feature);
+                /*
+                double[] result = AHRS.MadgwickAHRSupdate(DATA[0][0], DATA[0][1], DATA[0][2],
+                        DATA[1][0], DATA[1][1], DATA[1][2], DATA[2][0], DATA[2][1], DATA[2][2]);
+                        */
+        double[] result = SimpleAlg.getPosition(DATA[3][0], DATA[3][1], DATA[3][2]);
+        String strOutput = decimalFormat.format(prediction);
+
+        sensor_data.clear();
         acSensorManager.unregisterListener(acSensorEventListener, acSensor);
         grSensorManager.unregisterListener(grSensorEventListener, grSensor);
         gySensorManager.unregisterListener(gySensorEventListener, gySensor);
+
+
         /*
         double[] tmp = AHRS.MadgwickAHRSupdate(DATA[0][0], DATA[0][1], DATA[0][2], DATA[1][0],
                 DATA[1][1], DATA[1][2], DATA[2][0], DATA[2][1], DATA[2][2]);
@@ -193,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.velocity)).setText(in);
     }
 
+
     private class Watcher extends AsyncTask<Void, String, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
@@ -206,14 +239,32 @@ public class MainActivity extends AppCompatActivity {
                 if (DATA[0][0] == 0.0 && DATA[0][1] == 0.0 && DATA[0][2] == 0.0) {
                     continue;
                 }
+
+                double[] feature = new double[30];
+
+                if (sensor_data.size() > 30) {
+                    int count = 0;
+                    for (int i = sensor_data.size() - 1; i > sensor_data.size() - 30; i--) {
+                        feature[count] = sensor_data.get(i);
+                        count++;
+                    }
+                } else {
+                    int count = 0;
+                    int size = sensor_data.size();
+                    for (int i = sensor_data.size() - 1; i > sensor_data.size() - size; i--) {
+                        feature[count] = sensor_data.get(i);
+                        count++;
+                    }
+                }
+
+                int prediction = RandomForestClassifier.predict(feature);
                 /*
                 double[] result = AHRS.MadgwickAHRSupdate(DATA[0][0], DATA[0][1], DATA[0][2],
                         DATA[1][0], DATA[1][1], DATA[1][2], DATA[2][0], DATA[2][1], DATA[2][2]);
                         */
                 double[] result = SimpleAlg.getPosition(DATA[3][0], DATA[3][1], DATA[3][2]);
-                String strOutput = decimalFormat.format(result[0]) + ", "
-                        + decimalFormat.format(result[1])
-                        + ", " + decimalFormat.format(result[2]);
+                String strOutput = decimalFormat.format(prediction);
+
                 publishProgress(strOutput);
                 linkedList.add(result);
             }
